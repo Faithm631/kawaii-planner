@@ -688,28 +688,34 @@ const app = initializeApp(firebaseConfig);
     /******************************************************
      * 3. AUTH HANDLING
      ******************************************************/
-    loginBtn.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-      authMessage.textContent = "";
-      try {
-        await auth.signInWithEmailAndPassword(email, password);
-      } catch (err) {
-        authMessage.textContent = "Login error: " + err.message;
-      }
-    });
+loginBtn.addEventListener("click", async () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+  authMessage.textContent = "Trying to log in...";
+  try {
+    await auth.signInWithEmailAndPassword(email, password);
+    authMessage.textContent = "Logged in!";
+  } catch (err) {
+    console.error("Login error:", err);
+    authMessage.textContent = "Login error: " + err.message;
+    alert("Login error:\n" + err.message);
+  }
+});
 
-    signupBtn.addEventListener("click", async () => {
-      const email = emailInput.value.trim();
-      const password = passwordInput.value;
-      authMessage.textContent = "";
-      try {
-        await auth.createUserWithEmailAndPassword(email, password);
-        authMessage.textContent = "Account created, logged in!";
-      } catch (err) {
-        authMessage.textContent = "Sign up error: " + err.message;
-      }
-    });
+signupBtn.addEventListener("click", async () => {
+  const email = emailInput.value.trim();
+  const password = passwordInput.value;
+  authMessage.textContent = "Creating account...";
+  try {
+    await auth.createUserWithEmailAndPassword(email, password);
+    authMessage.textContent = "Account created, logged in!";
+  } catch (err) {
+    console.error("Signup error:", err);
+    authMessage.textContent = "Sign up error: " + err.message;
+    alert("Sign up error:\n" + err.message);
+  }
+});
+
 
     logoutBtn.addEventListener("click", async () => {
       await auth.signOut();
@@ -1002,4 +1008,5 @@ const app = initializeApp(firebaseConfig);
   </script>
 </body>
 </html>
+
 
