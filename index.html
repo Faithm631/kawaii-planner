@@ -1,0 +1,1001 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kawaii 24-Hour Planner</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #ffe6f7, #e6f0ff);
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --accent: #ff9acb;
+      --accent-soft: #ffd6eb;
+      --accent-strong: #ff6fa8;
+      --text-main: #444;
+      --grid-border: #f4cbe4;
+      --slot-bg: #fffafb;
+      --slot-bg-alt: #fff2fb;
+      --slot-focus: #ffe0f2;
+      --shadow-soft: 0 10px 25px rgba(0, 0, 0, 0.08);
+      --rounded-xl: 22px;
+      --sticker-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-gradient);
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      color: var(--text-main);
+    }
+
+    .app-shell {
+      max-width: 1200px;
+      width: 100%;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 28px;
+      box-shadow: var(--shadow-soft);
+      padding: 24px 20px;
+      width: 100%;
+      max-width: 1100px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::before,
+    .card::after {
+      content: "★";
+      position: absolute;
+      font-size: 38px;
+      opacity: 0.2;
+      pointer-events: none;
+    }
+    .card::before {
+      top: 10px;
+      right: 40px;
+      color: #ffd1f2;
+    }
+    .card::after {
+      bottom: -10px;
+      left: 20px;
+      color: #c5ddff;
+    }
+
+    h1 {
+      font-size: 1.7rem;
+      margin: 0 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    h1 span.emoji {
+      font-size: 1.6rem;
+    }
+
+    .subtitle {
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      color: #777;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 1.4fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Auth styles */
+    .auth-screen {
+      text-align: center;
+    }
+
+    .auth-card {
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .auth-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 16px 0;
+    }
+
+    .input {
+      border-radius: 999px;
+      border: 1px solid #f2cde3;
+      padding: 10px 14px;
+      font-size: 0.95rem;
+      outline: none;
+      background: #fff9fd;
+    }
+
+    .input:focus {
+      border-color: var(--accent-strong);
+      box-shadow: 0 0 0 2px #ffe1f5;
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border-radius: 999px;
+      border: none;
+      padding: 9px 16px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+      background: var(--accent);
+      color: white;
+      box-shadow: 0 4px 10px rgba(255, 154, 203, 0.5);
+      transition: transform 0.08s ease, box-shadow 0.08s ease, background 0.1s ease;
+    }
+
+    .btn.secondary {
+      background: #fff1fb;
+      color: #c55997;
+      box-shadow: none;
+      border: 1px solid #ffd3ee;
+    }
+
+    .btn:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 5px rgba(255, 154, 203, 0.4);
+    }
+
+    .auth-toggle {
+      font-size: 0.8rem;
+      margin-top: 10px;
+      color: #7c5d88;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* Planner header */
+    .planner-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .planner-left {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .date-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 0.9rem;
+    }
+
+    .kawaii-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      border-radius: 999px;
+      background: #fff0f8;
+      padding: 4px 10px;
+      border: 1px solid #ffd7ef;
+      font-size: 0.8rem;
+    }
+
+    .pill-label {
+      font-weight: 600;
+      color: #c55593;
+    }
+
+    .pill-value {
+      color: #8a6ca0;
+    }
+
+    .logout-btn {
+      font-size: 0.8rem;
+      padding-block: 6px;
+    }
+
+    /* Planner grid */
+    .planner-wrapper {
+      position: relative;
+      border-radius: var(--rounded-xl);
+      border: 1px solid #f6cbe6;
+      background: #fff9fe;
+      overflow: hidden;
+    }
+
+    .planner-scroll {
+      max-height: 70vh;
+      overflow: auto;
+      position: relative;
+      padding: 6px;
+    }
+
+    .planner-grid {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 0.78rem;
+    }
+
+    .planner-grid th,
+    .planner-grid td {
+      border: 1px solid var(--grid-border);
+      padding: 0;
+    }
+
+    .planner-grid th {
+      position: sticky;
+      top: 0;
+      background: #ffe6f6;
+      z-index: 2;
+      font-weight: 600;
+      text-align: center;
+      padding: 6px 4px;
+    }
+
+    .time-col {
+      width: 60px;
+      background: #ffe8f5;
+      position: sticky;
+      left: 0;
+      z-index: 1;
+      text-align: center;
+      font-weight: 600;
+      color: #c45994;
+    }
+
+    .slot {
+      min-height: 42px;
+      background: var(--slot-bg);
+      position: relative;
+    }
+
+    .slot:nth-child(even) {
+      background: var(--slot-bg-alt);
+    }
+
+    .slot textarea {
+      border: none;
+      resize: none;
+      width: 100%;
+      height: 100%;
+      padding: 6px 6px;
+      font-size: 0.76rem;
+      outline: none;
+      background: transparent;
+      font-family: inherit;
+    }
+
+    .slot textarea:focus {
+      background: var(--slot-focus);
+    }
+
+    .quarter-label {
+      font-size: 0.7rem;
+      opacity: 0.6;
+      position: absolute;
+      right: 4px;
+      bottom: 2px;
+    }
+
+    /* Kawaii clips panel */
+    .panel {
+      border-radius: var(--rounded-xl);
+      border: 1px dashed #f3c0df;
+      background: #fff7fd;
+      padding: 12px;
+      font-size: 0.85rem;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      height: 100%;
+    }
+
+    .panel h2 {
+      font-size: 1rem;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .panel-section {
+      border-radius: 18px;
+      background: #fff;
+      padding: 8px 10px;
+      border: 1px solid #ffe0f4;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .panel-section label {
+      font-size: 0.78rem;
+      color: #8d688f;
+    }
+
+    .panel-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .mini-input {
+      border-radius: 999px;
+      border: 1px solid #f4c7e7;
+      padding: 4px 8px;
+      font-size: 0.8rem;
+      min-width: 0;
+      flex: 1;
+      background: #fffefe;
+    }
+
+    .sticker-palette {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      font-size: 1.1rem;
+    }
+
+    .sticker-btn {
+      border-radius: 14px;
+      border: none;
+      background: #ffe7f6;
+      padding: 4px 8px;
+      cursor: pointer;
+    }
+
+    .sticker-btn:hover {
+      background: #ffd3f0;
+    }
+
+    .info-line {
+      font-size: 0.7rem;
+      color: #9a7bb1;
+    }
+
+    .status-line {
+      font-size: 0.72rem;
+      color: #6f7fb0;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #c2cce6;
+    }
+
+    .status-dot.saving {
+      background: #ffd05f;
+    }
+
+    .status-dot.saved {
+      background: #6ad58a;
+    }
+
+    .status-dot.error {
+      background: #ff6b81;
+    }
+
+    /* Stickers on planner */
+    .sticker-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    .sticker {
+      position: absolute;
+      min-width: 36px;
+      min-height: 36px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 6px 10px;
+      font-size: 1.1rem;
+      background: rgba(255, 248, 255, 0.95);
+      border: 1px solid #ffd5f0;
+      box-shadow: var(--sticker-shadow);
+      cursor: move;
+      user-select: none;
+      pointer-events: auto;
+    }
+
+    .sticker img {
+      max-width: 40px;
+      max-height: 40px;
+      border-radius: 999px;
+      display: block;
+    }
+
+    .sticker.selected {
+      box-shadow: 0 0 0 2px #ff9acb, var(--sticker-shadow);
+    }
+
+    .sticker-remove {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 16px;
+      height: 16px;
+      border-radius: 999px;
+      border: none;
+      background: #ff8ba7;
+      color: white;
+      font-size: 11px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Scrollbar */
+    .planner-scroll::-webkit-scrollbar {
+      width: 8px;
+    }
+    .planner-scroll::-webkit-scrollbar-thumb {
+      background: #efc7ea;
+      border-radius: 999px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <div class="card">
+      <!-- AUTH SCREEN -->
+      <div id="authScreen" class="auth-screen">
+        <div class="auth-card">
+          <h1><span class="emoji">💌</span> Kawaii Planner Login</h1>
+          <p class="subtitle">
+            Your 24-hour pastel planner, protected by a cozy little password.
+          </p>
+          <div class="auth-input-group">
+            <input id="emailInput" type="email" class="input" placeholder="Email" />
+            <input id="passwordInput" type="password" class="input" placeholder="Password" />
+          </div>
+          <div class="btn-row">
+            <button id="loginBtn" class="btn">Log in</button>
+            <button id="signupBtn" class="btn secondary">Sign up</button>
+          </div>
+          <div id="authMessage" class="info-line" style="margin-top: 8px;"></div>
+          <div class="auth-toggle">
+            Use the same email and password on every device to see the same planner.
+          </div>
+        </div>
+      </div>
+
+      <!-- PLANNER SCREEN -->
+      <div id="plannerScreen" class="hidden">
+        <div class="planner-header">
+          <div class="planner-left">
+            <h1><span class="emoji">📅</span> Kawaii 24-Hour Planner</h1>
+            <div class="date-row">
+              <div class="kawaii-pill">
+                <span class="pill-label">Day</span>
+                <input id="datePicker" type="date" class="mini-input" />
+              </div>
+              <div class="kawaii-pill">
+                <span class="pill-label">View</span>
+                <span class="pill-value">24 hrs, 15-minute slices</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <button id="logoutBtn" class="btn secondary logout-btn">Logout</button>
+          </div>
+        </div>
+
+        <div class="layout">
+          <!-- Planner grid -->
+          <div class="planner-wrapper">
+            <div class="planner-scroll" id="plannerScroll">
+              <table class="planner-grid" id="plannerGrid">
+                <thead>
+                  <tr>
+                    <th class="time-col">Time</th>
+                    <th>00</th>
+                    <th>15</th>
+                    <th>30</th>
+                    <th>45</th>
+                  </tr>
+                </thead>
+                <tbody id="plannerBody"></tbody>
+              </table>
+              <div class="sticker-layer" id="stickerLayer"></div>
+            </div>
+          </div>
+
+          <!-- Kawaii options -->
+          <div class="panel">
+            <h2><span>🌸</span> Kawaii Customization</h2>
+
+            <div class="panel-section">
+              <label>Quick stickers</label>
+              <div class="sticker-palette">
+                <button class="sticker-btn" data-emoji="🌸">🌸</button>
+                <button class="sticker-btn" data-emoji="🐰">🐰</button>
+                <button class="sticker-btn" data-emoji="💖">💖</button>
+                <button class="sticker-btn" data-emoji="🍓">🍓</button>
+                <button class="sticker-btn" data-emoji="⭐">⭐</button>
+                <button class="sticker-btn" data-emoji="🎀">🎀</button>
+              </div>
+              <div class="info-line">
+                Click one, it appears on the planner, drag to place it.
+              </div>
+            </div>
+
+            <div class="panel-section">
+              <label>Custom sticker text</label>
+              <div class="panel-row">
+                <input id="customStickerText" class="mini-input" placeholder="e.g. Study time!" />
+                <button id="addTextStickerBtn" class="btn" style="font-size: 0.8rem;">Add</button>
+              </div>
+            </div>
+
+            <div class="panel-section">
+              <label>Clip art URL</label>
+              <div class="panel-row">
+                <input id="stickerUrlInput" class="mini-input" placeholder="Paste image link here" />
+                <button id="addImageStickerBtn" class="btn" style="font-size: 0.8rem;">Add</button>
+              </div>
+              <div class="info-line">
+                Use your own pastel images or cute art links. The image will be placed on the planner and saved.
+              </div>
+            </div>
+
+            <div class="panel-section">
+              <label>Save status</label>
+              <div class="status-line">
+                <div id="statusDot" class="status-dot"></div>
+                <span id="statusText">Ready</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div> <!-- end planner screen -->
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <!-- You will add your own config below in the JS section -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+
+  <script>
+    /******************************************************
+     * 1. FIREBASE SETUP
+     ******************************************************/
+    // 1) Create a Firebase project at https://console.firebase.google.com
+    // 2) Add a Web app, copy the "firebaseConfig" values, and paste them here:
+
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID",
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    /******************************************************
+     * 2. BASIC UTILITIES
+     ******************************************************/
+    const authScreen = document.getElementById("authScreen");
+    const plannerScreen = document.getElementById("plannerScreen");
+    const emailInput = document.getElementById("emailInput");
+    const passwordInput = document.getElementById("passwordInput");
+    const loginBtn = document.getElementById("loginBtn");
+    const signupBtn = document.getElementById("signupBtn");
+    const logoutBtn = document.getElementById("logoutBtn");
+    const authMessage = document.getElementById("authMessage");
+
+    const plannerBody = document.getElementById("plannerBody");
+    const plannerGrid = document.getElementById("plannerGrid");
+    const datePicker = document.getElementById("datePicker");
+    const plannerScroll = document.getElementById("plannerScroll");
+
+    const statusDot = document.getElementById("statusDot");
+    const statusText = document.getElementById("statusText");
+
+    const stickerLayer = document.getElementById("stickerLayer");
+    const stickerUrlInput = document.getElementById("stickerUrlInput");
+    const addImageStickerBtn = document.getElementById("addImageStickerBtn");
+    const customStickerText = document.getElementById("customStickerText");
+    const addTextStickerBtn = document.getElementById("addTextStickerBtn");
+
+    let currentUser = null;
+    let currentDateKey = null;
+    let currentPlanData = {
+      slots: {},
+      stickers: [],
+    };
+
+    let saveTimeout = null;
+    let isSaving = false;
+
+    function setStatus(state, text) {
+      statusDot.classList.remove("saving", "saved", "error");
+      if (state) statusDot.classList.add(state);
+      statusText.textContent = text;
+    }
+
+    function getTodayDateKey() {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return year + "-" + month + "-" + day;
+    }
+
+    function setDatePickerToToday() {
+      const todayKey = getTodayDateKey();
+      datePicker.value = todayKey;
+    }
+
+    /******************************************************
+     * 3. AUTH HANDLING
+     ******************************************************/
+    loginBtn.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      authMessage.textContent = "";
+      try {
+        await auth.signInWithEmailAndPassword(email, password);
+      } catch (err) {
+        authMessage.textContent = "Login error: " + err.message;
+      }
+    });
+
+    signupBtn.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+      const password = passwordInput.value;
+      authMessage.textContent = "";
+      try {
+        await auth.createUserWithEmailAndPassword(email, password);
+        authMessage.textContent = "Account created, logged in!";
+      } catch (err) {
+        authMessage.textContent = "Sign up error: " + err.message;
+      }
+    });
+
+    logoutBtn.addEventListener("click", async () => {
+      await auth.signOut();
+    });
+
+    auth.onAuthStateChanged(async (user) => {
+      if (user) {
+        currentUser = user;
+        authScreen.classList.add("hidden");
+        plannerScreen.classList.remove("hidden");
+        setDatePickerToToday();
+        buildPlannerGrid();
+        await loadPlanForDate(datePicker.value);
+      } else {
+        currentUser = null;
+        plannerScreen.classList.add("hidden");
+        authScreen.classList.remove("hidden");
+      }
+    });
+
+    /******************************************************
+     * 4. PLANNER GRID CREATION
+     ******************************************************/
+    function buildPlannerGrid() {
+      plannerBody.innerHTML = "";
+      for (let hour = 0; hour < 24; hour++) {
+        const row = document.createElement("tr");
+
+        // Time column
+        const timeCell = document.createElement("td");
+        timeCell.className = "time-col";
+        const hourLabel = hour === 0
+          ? "12 AM"
+          : hour < 12
+          ? hour + " AM"
+          : hour === 12
+          ? "12 PM"
+          : (hour - 12) + " PM";
+        timeCell.textContent = hourLabel;
+        row.appendChild(timeCell);
+
+        const quarters = ["00", "15", "30", "45"];
+        for (const q of quarters) {
+          const slotCell = document.createElement("td");
+          slotCell.className = "slot";
+
+          const textarea = document.createElement("textarea");
+          const key = String(hour).padStart(2, "0") + ":" + q;
+          textarea.dataset.timeKey = key;
+
+          const label = document.createElement("div");
+          label.className = "quarter-label";
+          label.textContent = q;
+
+          slotCell.appendChild(textarea);
+          slotCell.appendChild(label);
+          row.appendChild(slotCell);
+
+          textarea.addEventListener("input", handleSlotInput);
+        }
+
+        plannerBody.appendChild(row);
+      }
+    }
+
+    function fillPlannerFromData() {
+      const textareas = plannerBody.querySelectorAll("textarea[data-time-key]");
+      textareas.forEach((ta) => {
+        const key = ta.dataset.timeKey;
+        ta.value = currentPlanData.slots[key] || "";
+      });
+    }
+
+    function handleSlotInput(event) {
+      const textarea = event.target;
+      const key = textarea.dataset.timeKey;
+      currentPlanData.slots[key] = textarea.value;
+      scheduleSave();
+    }
+
+    /******************************************************
+     * 5. FIRESTORE DATA
+     ******************************************************/
+    function getPlanDocRef(dateKey) {
+      return db.collection("users")
+        .doc(currentUser.uid)
+        .collection("plans")
+        .doc(dateKey);
+    }
+
+    async function loadPlanForDate(dateKey) {
+      if (!currentUser) return;
+      setStatus(null, "Loading your planner for this date...");
+      currentDateKey = dateKey;
+
+      try {
+        const docRef = getPlanDocRef(dateKey);
+        const docSnap = await docRef.get();
+        if (docSnap.exists) {
+          const data = docSnap.data();
+          currentPlanData = {
+            slots: data.slots || {},
+            stickers: data.stickers || [],
+          };
+        } else {
+          currentPlanData = {
+            slots: {},
+            stickers: [],
+          };
+        }
+        fillPlannerFromData();
+        renderStickers();
+        setStatus("saved", "Loaded and ready");
+      } catch (err) {
+        console.error(err);
+        setStatus("error", "Error loading planner");
+      }
+    }
+
+    async function savePlan() {
+      if (!currentUser || !currentDateKey) return;
+      isSaving = true;
+      setStatus("saving", "Saving...");
+      try {
+        const docRef = getPlanDocRef(currentDateKey);
+        await docRef.set(
+          {
+            date: currentDateKey,
+            slots: currentPlanData.slots,
+            stickers: currentPlanData.stickers,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+          },
+          { merge: true }
+        );
+        setStatus("saved", "Saved");
+      } catch (err) {
+        console.error(err);
+        setStatus("error", "Error while saving");
+      } finally {
+        isSaving = false;
+      }
+    }
+
+    function scheduleSave() {
+      if (saveTimeout) clearTimeout(saveTimeout);
+      saveTimeout = setTimeout(savePlan, 800);
+      setStatus("saving", "Saving soon...");
+    }
+
+    datePicker.addEventListener("change", () => {
+      const newDate = datePicker.value;
+      loadPlanForDate(newDate);
+    });
+
+    /******************************************************
+     * 6. STICKERS
+     ******************************************************/
+    let draggingSticker = null;
+    let dragOffsetX = 0;
+    let dragOffsetY = 0;
+
+    function createStickerObject(type, content) {
+      return {
+        id: "sticker_" + Date.now() + "_" + Math.random().toString(36).slice(2),
+        type, // "emoji" | "text" | "image"
+        content,
+        x: 40,
+        y: 40,
+      };
+    }
+
+    function renderStickers() {
+      stickerLayer.innerHTML = "";
+      currentPlanData.stickers.forEach((sticker) => {
+        const stickerEl = document.createElement("div");
+        stickerEl.className = "sticker";
+        stickerEl.style.left = sticker.x + "px";
+        stickerEl.style.top = sticker.y + "px";
+        stickerEl.dataset.id = sticker.id;
+
+        if (sticker.type === "image") {
+          const img = document.createElement("img");
+          img.src = sticker.content;
+          img.alt = "sticker";
+          stickerEl.appendChild(img);
+        } else {
+          stickerEl.textContent = sticker.content;
+        }
+
+        // Remove button
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "×";
+        removeBtn.className = "sticker-remove";
+        removeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          removeStickerById(sticker.id);
+        });
+        stickerEl.appendChild(removeBtn);
+
+        stickerEl.addEventListener("mousedown", (e) => {
+          e.preventDefault();
+          startDraggingSticker(e, stickerEl, sticker.id);
+        });
+
+        stickerLayer.appendChild(stickerEl);
+      });
+    }
+
+    function addSticker(type, content) {
+      const sticker = createStickerObject(type, content);
+      currentPlanData.stickers.push(sticker);
+      renderStickers();
+      scheduleSave();
+    }
+
+    function removeStickerById(id) {
+      currentPlanData.stickers = currentPlanData.stickers.filter((s) => s.id !== id);
+      renderStickers();
+      scheduleSave();
+    }
+
+    function startDraggingSticker(event, element, id) {
+      draggingSticker = { id, element };
+      const rect = element.getBoundingClientRect();
+      dragOffsetX = event.clientX - rect.left;
+      dragOffsetY = event.clientY - rect.top;
+      element.classList.add("selected");
+      document.addEventListener("mousemove", handleStickerMove);
+      document.addEventListener("mouseup", stopDraggingSticker);
+    }
+
+    function handleStickerMove(event) {
+      if (!draggingSticker) return;
+      const layerRect = stickerLayer.getBoundingClientRect();
+      let newX = event.clientX - layerRect.left - dragOffsetX;
+      let newY = event.clientY - layerRect.top - dragOffsetY;
+
+      // Soft boundaries
+      newX = Math.max(0, Math.min(layerRect.width - 40, newX));
+      newY = Math.max(0, Math.min(layerRect.height - 40, newY));
+
+      const el = draggingSticker.element;
+      el.style.left = newX + "px";
+      el.style.top = newY + "px";
+
+      const sticker = currentPlanData.stickers.find((s) => s.id === draggingSticker.id);
+      if (sticker) {
+        sticker.x = newX;
+        sticker.y = newY;
+      }
+    }
+
+    function stopDraggingSticker() {
+      if (!draggingSticker) return;
+      draggingSticker.element.classList.remove("selected");
+      draggingSticker = null;
+      document.removeEventListener("mousemove", handleStickerMove);
+      document.removeEventListener("mouseup", stopDraggingSticker);
+      scheduleSave();
+    }
+
+    // Palette buttons
+    document.querySelectorAll(".sticker-btn[data-emoji]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const emoji = btn.dataset.emoji;
+        addSticker("emoji", emoji);
+      });
+    });
+
+    addTextStickerBtn.addEventListener("click", () => {
+      const text = customStickerText.value.trim();
+      if (!text) return;
+      addSticker("text", text);
+      customStickerText.value = "";
+    });
+
+    addImageStickerBtn.addEventListener("click", () => {
+      const url = stickerUrlInput.value.trim();
+      if (!url) return;
+      addSticker("image", url);
+      stickerUrlInput.value = "";
+    });
+
+    /******************************************************
+     * 7. INITIALIZE
+     ******************************************************/
+    window.addEventListener("load", () => {
+      setStatus(null, "Waiting for login");
+    });
+  </script>
+</body>
+</html>
