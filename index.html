@@ -613,14 +613,17 @@
     // 1) Create a Firebase project at https://console.firebase.google.com
     // 2) Add a Web app, copy the "firebaseConfig" values, and paste them here:
 
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_AUTH_DOMAIN",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_STORAGE_BUCKET",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID",
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyAot6C98N72SZbHwlSOM3MzrwB289Qndbk",
+  authDomain: "kawaii-planner-pink.firebaseapp.com",
+  projectId: "kawaii-planner-pink",
+  storageBucket: "kawaii-planner-pink.firebasestorage.app",
+  messagingSenderId: "91398077842",
+  appId: "1:91398077842:web:ce7b034197f54c2045554b"
+};
+
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 
     // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
@@ -999,3 +1002,4 @@
   </script>
 </body>
 </html>
+
