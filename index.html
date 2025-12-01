@@ -613,6 +613,12 @@
     // 1) Create a Firebase project at https://console.firebase.google.com
     // 2) Add a Web app, copy the "firebaseConfig" values, and paste them here:
 
+// Import the functions you need from the SDKs you need
+import { initializeApp } from "firebase/app";
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAot6C98N72SZbHwlSOM3MzrwB289Qndbk",
   authDomain: "kawaii-planner-pink.firebaseapp.com",
@@ -622,6 +628,8 @@ const firebaseConfig = {
   appId: "1:91398077842:web:ce7b034197f54c2045554b"
 };
 
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
@@ -1008,5 +1016,6 @@ signupBtn.addEventListener("click", async () => {
   </script>
 </body>
 </html>
+
 
 
